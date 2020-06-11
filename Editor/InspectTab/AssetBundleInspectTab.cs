@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Linq;
+using WWFramework.UI.Editor;
 
 namespace AssetBundleBrowser
 {
@@ -30,6 +31,8 @@ namespace AssetBundleBrowser
         /// Collection of loaded asset bundle records indexed by bundle name
         /// </summary>
         private Dictionary<string, AssetBundleRecord> m_loadedAssetBundles;
+
+        public string SearchText { get; private set; }
 
         /// <summary>
         /// Returns the record for a loaded asset bundle by name if it exists in our container.
@@ -131,6 +134,21 @@ namespace AssetBundleBrowser
             EditorGUILayout.Space();
             GUILayout.BeginHorizontal();
 
+            if (GUILayout.Button("LogAssetBundlePath", GUILayout.MaxWidth(150)))
+            {
+                LogSearchAssetBundlePath(false);
+            }
+            if (GUILayout.Button("LogAllAssetBundlePath", GUILayout.MaxWidth(200)))
+            {
+                LogSearchAssetBundlePath(true);
+            }
+            SearchText = EditorUIHelper.SearchCancelTextField(SearchText); 
+                
+            GUILayout.EndHorizontal();
+
+            EditorGUILayout.Space();
+            GUILayout.BeginHorizontal();
+
             if (GUILayout.Button("Add File", GUILayout.MaxWidth(75f)))
             {
                 BrowseForFile();
@@ -146,8 +164,9 @@ namespace AssetBundleBrowser
             if (m_BundleList.Count > 0)
             {
                 int halfWidth = (int)(m_Position.width / 2.0f);
-                m_BundleTreeView.OnGUI(new Rect(m_Position.x, m_Position.y + 30, halfWidth, m_Position.height - 30));
-                m_SingleInspector.OnGUI(new Rect(m_Position.x + halfWidth, m_Position.y + 30, halfWidth, m_Position.height - 30));
+                var height = 60;
+                m_BundleTreeView.OnGUI(new Rect(m_Position.x, m_Position.y + height, halfWidth, m_Position.height - height));
+                m_SingleInspector.OnGUI(new Rect(m_Position.x + halfWidth, m_Position.y + height, halfWidth, m_Position.height - height));
             }
         }
 
@@ -205,6 +224,30 @@ namespace AssetBundleBrowser
         internal void AddBundleFolder(string folderPath)
         {
             m_Data.AddFolder(folderPath);
+        }
+
+        private void LogSearchAssetBundlePath(bool allCheck)
+        {
+            if (string.IsNullOrEmpty(SearchText))
+            {
+                return;
+            }
+
+            foreach (var folder in BundleList)
+            {
+                foreach (var path in folder.Value)
+                {
+                    var ab = LoadBundle(path);
+                    if (ab && ab.name.Contains(SearchText))
+                    {
+                        Debug.Log($"{path}\n{ab.name}");
+                        if (!allCheck)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
         }
 
         private void ClearData()

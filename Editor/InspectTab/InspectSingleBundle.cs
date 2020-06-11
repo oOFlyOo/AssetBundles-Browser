@@ -79,7 +79,7 @@ namespace AssetBundleBrowser
     [CustomEditor(typeof(AssetBundle))]
     internal class AssetBundleEditor : Editor
     {
-        internal bool pathFoldout = false;
+        internal bool pathFoldout = true;
         internal bool advancedFoldout = false;
         public override void OnInspectorGUI()
         {
